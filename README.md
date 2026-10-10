@@ -28,27 +28,26 @@ The model was trained using the FD001 training data and evaluated against the pr
 
 ```text
 SentinelX/
-â”œâ”€â”€ configs/
-â”œâ”€â”€ models/
-â”‚   â”œâ”€â”€ sentinelx_lightgbm.joblib
-â”‚   â”œâ”€â”€ fd001_actual_vs_predicted.png
-â”‚   â”œâ”€â”€ fd001_test_predictions.csv
-â”‚   â””â”€â”€ feature_importance.png
-â”œâ”€â”€ notebooks/
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ api.py
-â”‚   â”œâ”€â”€ prepare_data.py
-â”‚   â”œâ”€â”€ train_final_model.py
-â”‚   â”œâ”€â”€ evaluate_official_test.py
-â”‚   â”œâ”€â”€ analyze_predictions.py
-â”‚   â”œâ”€â”€ validate_readings.py
-â”‚   â””â”€â”€ sensor_ranges.json
-â”œâ”€â”€ tests/
-â”‚   â””â”€â”€ test_api.py
-â”œâ”€â”€ .dockerignore
-â”œâ”€â”€ .gitignore
-â”œâ”€â”€ Dockerfile
-â””â”€â”€ requirements.txt
+|-- models/
+|   |-- sentinelx_lightgbm.joblib
+|   |-- fd001_actual_vs_predicted.png
+|   |-- fd001_test_predictions.csv
+|   `-- feature_importance.png
+|-- src/
+|   |-- api.py
+|   |-- prepare_data.py
+|   |-- train_final_model.py
+|   |-- evaluate_official_test.py
+|   |-- analyze_predictions.py
+|   |-- validate_readings.py
+|   `-- sensor_ranges.json
+|-- tests/
+|   `-- test_api.py
+|-- .dockerignore
+|-- .gitignore
+|-- Dockerfile
+|-- README.md
+`-- requirements.txt
 ```
 
 ## Features
@@ -89,7 +88,7 @@ pip install -r requirements.txt
 
 Download the NASA C-MAPSS dataset separately and place the FD001 files in the location expected by the data-loading scripts. The raw dataset is excluded from this repository because of its size.
 
-Run the project's data preparation and training scripts as appropriate, or use the included trained model if available.
+The repository includes a trained model at `models/sentinelx_lightgbm.joblib`, so you can start the API without retraining if the model and dependencies are available.
 
 ### 5. Start the API
 
@@ -97,7 +96,7 @@ Run the project's data preparation and training scripts as appropriate, or use t
 uvicorn src.api:app --host 127.0.0.1 --port 8000
 ```
 
-Open `http://127.0.0.1:8000/docs` to explore the interactive API documentation.
+Open http://127.0.0.1:8000/docs to explore the interactive API documentation.
 
 ## API Endpoints
 
@@ -124,7 +123,7 @@ Start the container:
 docker run --name sentinelx-container -p 8000:8000 sentinelx-api
 ```
 
-Then visit `http://localhost:8000/docs`.
+Then visit http://localhost:8000/docs.
 
 ## Run Tests
 
@@ -141,5 +140,6 @@ python -m pytest .\tests\test_api.py -v
 
 ## Author
 
-**R.Gayatri**
-GitHub: [Gayatri-2630](https://github.com/Gayatri-2630)
+**R. Gayatri**
+
+GitHub: https://github.com/Gayatri-2630
