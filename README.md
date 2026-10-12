@@ -116,6 +116,53 @@ Open http://127.0.0.1:8000/docs to explore the interactive API documentation.
 
 The prediction endpoint expects a positive engine cycle, three operating settings, and 21 sensor values.
 
+### Example Prediction Request
+
+Send a `POST` request to `/predict` with the current engine cycle, three operating settings, and 21 sensor readings.
+
+```json
+{
+  "cycle": 100,
+  "setting_1": -0.0021,
+  "setting_2": -0.0003,
+  "setting_3": 100.0,
+  "sensor_1": 518.67,
+  "sensor_2": 642.22,
+  "sensor_3": 1589.63,
+  "sensor_4": 1411.35,
+  "sensor_5": 14.62,
+  "sensor_6": 21.61,
+  "sensor_7": 554.22,
+  "sensor_8": 2388.07,
+  "sensor_9": 9045.72,
+  "sensor_10": 1.3,
+  "sensor_11": 47.64,
+  "sensor_12": 521.55,
+  "sensor_13": 2388.08,
+  "sensor_14": 8132.49,
+  "sensor_15": 8.4241,
+  "sensor_16": 0.03,
+  "sensor_17": 392.0,
+  "sensor_18": 2388.0,
+  "sensor_19": 100.0,
+  "sensor_20": 38.93,
+  "sensor_21": 23.409
+}
+```
+
+Example response:
+
+```json
+{
+  "predicted_rul_cycles": 109.83,
+  "unit": "cycles",
+  "model": "LightGBM"
+}
+```
+
+The predicted RUL is an estimate of the remaining useful life in operating cycles, not a certified maintenance decision.
+
+
 ## Run with Docker
 
 Build the image from the project root:
