@@ -64,18 +64,24 @@ def test_validate_flags_unusual_readings():
 
 
 def test_validate_accepts_observed_readings():
-    df = load_training_data("FD001")
-    row = df.iloc[0]
+    from src.validate_readings import TRAINING_RANGES
 
     payload = {
-        column: float(row[column])
-        for column in (
-            ["setting_1", "setting_2", "setting_3"]
-            + [f"sensor_{i}" for i in range(1, 22)]
-        )
+        "cycle": 100,
+        "setting_1": 0.0,
+        "setting_2": 0.0,
+        "setting_3": 100.0,
     }
 
-    result = inspect_reading(payload)
+    for sensor_number in range(1, 22):
+        limits = TRAINING_RANGES[f"sensor_{sensor_number}"]
+        payload[f"sensor_{sensor_number}"] = (
+            limits["min"] + limits["max"]
+        ) / 2
 
+    response = client.post("/validate", json=payload)
+
+    assert response.status_code == 200
+    result = response.json()
     assert result["within_observed_ranges"] is True
     assert result["warning_count"] == 0
