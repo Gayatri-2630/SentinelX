@@ -4,6 +4,16 @@ SentinelX is a machine learning project that estimates the **Remaining Useful Li
 
 The project combines a trained LightGBM regression model, a REST API, sensor-range validation, SHAP-based prediction explainability, Docker packaging, and automated tests.
 
+## 🚀 Live Demo
+
+- **Live API:** https://sentinelx-o4im.onrender.com
+- **Interactive API Documentation:** https://sentinelx-o4im.onrender.com/docs
+- **Health Check:** https://sentinelx-o4im.onrender.com/health
+
+Try the deployed API to generate Remaining Useful Life (RUL) predictions, inspect SHAP-based feature explanations, and validate sensor readings against observed FD001 training-data ranges.
+
+> **Note:** SentinelX is a research and portfolio project, not a certified aircraft safety system. The free hosting instance may take around 50 seconds or more to respond after periods of inactivity.
+
 ## Key Results
 
 Evaluated on the official NASA C-MAPSS FD001 test set.
