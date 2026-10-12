@@ -1,73 +1,82 @@
-﻿# SentinelX - Predictive Maintenance for Aircraft Engines
+﻿# SentinelX — Predictive Maintenance for Aircraft Engines
 
-SentinelX is a machine-learning project that estimates the Remaining Useful Life (RUL) of aircraft engines using sensor measurements from NASA's C-MAPSS turbofan engine degradation dataset.
+SentinelX is a machine learning project that estimates the **Remaining Useful Life (RUL)** of aircraft engines using sensor measurements from NASA's C-MAPSS turbofan engine degradation dataset.
 
-The project includes data preparation, model comparison, official test-set evaluation, sensor-range validation, a trained LightGBM model, a REST API, Docker packaging, and automated tests.
+The project combines a trained LightGBM regression model, a REST API, sensor-range validation, SHAP-based prediction explainability, Docker packaging, and automated tests.
 
 ## Key Results
 
-Evaluated on the official FD001 test set:
+Evaluated on the official NASA C-MAPSS FD001 test set.
 
 | Metric | Result |
 |---|---:|
-| RMSE | 26.08 cycles |
-| MAE | 18.95 cycles |
+| Root Mean Squared Error (RMSE) | 26.08 cycles |
+| Mean Absolute Error (MAE) | 18.95 cycles |
 
-The model was trained using the FD001 training data and evaluated against the provided official test-set RUL labels. These results apply to FD001 and should not be interpreted as a guarantee of performance on other engine configurations.
+The model was trained on FD001 training data and evaluated against the provided official test-set RUL labels. These metrics describe performance on FD001 and do not guarantee similar results on other engine configurations or real-world engines.
 
 ### Actual vs. Predicted Remaining Useful Life
 
 ![Actual vs. predicted RUL](models/fd001_actual_vs_predicted.png)
 
-The plot compares the model's predicted remaining useful life against the
-official FD001 test-set labels.
+The plot compares the model's predicted remaining useful life against the official FD001 test-set labels.
+
+## Features
+
+- **RUL prediction:** Estimates remaining useful life in operating cycles using LightGBM.
+- **REST API:** Provides prediction, validation, and explanation endpoints through FastAPI.
+- **SHAP explainability:** Identifies features contributing most strongly to an individual model prediction.
+- **Sensor-range validation:** Flags readings outside the observed FD001 training-data ranges.
+- **Model evaluation:** Includes official test-set evaluation and prediction-analysis scripts.
+- **Docker support:** Packages the trained model and API into a container.
+- **Automated testing:** Tests API behavior, input validation, and SHAP explainability.
 
 ## Tech Stack
 
-- **Language:** Python
-- **Machine Learning:** LightGBM, scikit-learn, pandas, NumPy
-- **API:** FastAPI, Pydantic, Uvicorn
-- **Model persistence:** Joblib
-- **Deployment packaging:** Docker
-- **Testing:** pytest, FastAPI TestClient
+| Category | Technologies |
+|---|---|
+| Language | Python |
+| Machine learning | LightGBM, scikit-learn, SHAP |
+| Data processing | pandas, NumPy |
+| API | FastAPI, Pydantic, Uvicorn |
+| Model persistence | Joblib |
+| Containerization | Docker |
+| Testing | pytest, FastAPI TestClient |
 
 ## Project Structure
 
 ```text
 SentinelX/
-|-- models/
-|   |-- sentinelx_lightgbm.joblib
-|   |-- fd001_actual_vs_predicted.png
-|   |-- fd001_test_predictions.csv
-|   `-- feature_importance.png
-|-- src/
-|   |-- api.py
-|   |-- prepare_data.py
-|   |-- train_final_model.py
-|   |-- evaluate_official_test.py
-|   |-- analyze_predictions.py
-|   |-- validate_readings.py
-|   `-- sensor_ranges.json
-|-- tests/
-|   `-- test_api.py
-|-- .dockerignore
-|-- .gitignore
-|-- Dockerfile
-|-- README.md
-`-- requirements.txt
+├── models/
+│   ├── sentinelx_lightgbm.joblib
+│   ├── fd001_actual_vs_predicted.png
+│   ├── fd001_test_predictions.csv
+│   └── feature_importance.png
+├── src/
+│   ├── api.py
+│   ├── explainability.py
+│   ├── prepare_data.py
+│   ├── train_final_model.py
+│   ├── evaluate_official_test.py
+│   ├── analyze_predictions.py
+│   ├── validate_readings.py
+│   └── sensor_ranges.json
+├── tests/
+│   └── test_api.py
+├── .dockerignore
+├── .gitignore
+├── Dockerfile
+├── README.md
+└── requirements.txt
 ```
 
-## Features
+## Getting Started
 
-- Estimates engine Remaining Useful Life in cycles from sensor readings.
-- Provides predictions through a REST API.
-- Validates incoming sensor values against observed FD001 training-data ranges.
-- Reports out-of-range values as warnings rather than physical safety judgments.
-- Packages the model and API in a Docker image.
-- Includes automated tests for API behavior and input validation.
-- Includes scripts for model comparison, feature analysis, and prediction-error analysis.
+### Prerequisites
 
-## Run Locally
+- Python 3.12
+- Git
+- Docker Desktop (optional, for containerized execution)
 
 ### 1. Clone the repository
 
@@ -88,37 +97,38 @@ python -m venv .venv
 ### 3. Install dependencies
 
 ```powershell
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-### 4. Prepare the dataset and model
+### 4. Start the API
 
-Download the NASA C-MAPSS dataset separately and place the FD001 files in the location expected by the data-loading scripts. The raw dataset is excluded from this repository because of its size.
-
-The repository includes a trained model at `models/sentinelx_lightgbm.joblib`, so you can start the API without retraining if the model and dependencies are available.
-
-### 5. Start the API
+The repository includes a trained model at `models/sentinelx_lightgbm.joblib`. You do **not** need to download the NASA dataset or retrain the model to run the API.
 
 ```powershell
 uvicorn src.api:app --host 127.0.0.1 --port 8000
 ```
 
-Open http://127.0.0.1:8000/docs to explore the interactive API documentation.
+Open the interactive API documentation:
 
-## API Endpoints
+**http://127.0.0.1:8000/docs**
 
-| Method | Endpoint | Purpose |
+The NASA C-MAPSS FD001 dataset is needed only if you want to rerun data preparation, model training, or official test-set evaluation. The raw dataset is excluded from this repository because of its size.
+
+## API Reference
+
+| Method | Endpoint | Description |
 |---|---|---|
-| GET | `/` | Service information |
-| GET | `/health` | API and model health |
-| POST | `/predict` | Predict engine RUL |
-| POST | `/validate` | Validate sensor readings against observed training ranges |
+| GET | `/` | Returns service information |
+| GET | `/health` | Reports API health and whether the model is loaded |
+| POST | `/predict` | Predicts remaining useful life |
+| POST | `/validate` | Checks readings against observed FD001 training ranges |
+| POST | `/explain` | Returns an RUL prediction and SHAP feature attributions |
 
-The prediction endpoint expects a positive engine cycle, three operating settings, and 21 sensor values.
+The prediction and explanation endpoints expect an engine cycle, three operating settings, and 21 sensor readings.
 
 ### Example Prediction Request
 
-Send a `POST` request to `/predict` with the current engine cycle, three operating settings, and 21 sensor readings.
+Send a `POST` request to `/predict` with a JSON body containing the current engine cycle, operating settings, and sensor measurements.
 
 ```json
 {
@@ -160,40 +170,102 @@ Example response:
 }
 ```
 
-The predicted RUL is an estimate of the remaining useful life in operating cycles, not a certified maintenance decision.
+The response above is the example previously documented for this input. Predictions are estimates, not certified maintenance or airworthiness decisions.
 
+### Sensor Validation
+
+Send the same input structure to `POST /validate`.
+
+The endpoint checks each reading against the observed minimum and maximum values in the FD001 training data and returns warnings for values outside those ranges.
+
+These checks are **data-range checks, not physical safety limits**. A reading inside the observed range is not proof that an engine is healthy, and a reading outside it is not by itself proof of a fault.
+
+### SHAP Explainability
+
+Send a `POST` request to `/explain` using the same JSON payload shown in the prediction example.
+
+The response includes:
+
+- `predicted_rul_cycles`: the non-negative RUL value returned by the endpoint.
+- `raw_model_prediction_cycles`: the model's unmodified prediction.
+- `base_value_cycles`: the SHAP reference value.
+- `top_features`: the five features with the largest absolute SHAP contributions.
+- `contributions_sum_cycles`: the sum of all feature contributions.
+- `reconstruction_error_cycles`: the absolute difference between the reconstructed and raw model prediction.
+
+Positive SHAP contributions push the model prediction higher relative to the reference value; negative contributions push it lower. These values describe model attribution, not physical causation.
+
+The following is an **illustrative response structure**, not a verified result for the example prediction input. The numerical values are placeholders.
+
+```json
+{
+  "service": "SentinelX",
+  "explanation_type": "SHAP feature attribution",
+  "interpretation": "Positive contributions increase predicted RUL; negative contributions decrease predicted RUL. These are model attributions, not causal explanations.",
+  "predicted_rul_cycles": 0.0,
+  "raw_model_prediction_cycles": 0.0,
+  "base_value_cycles": 0.0,
+  "top_features": [
+    {
+      "feature": "sensor_11",
+      "contribution_cycles": 0.0
+    }
+  ],
+  "contributions_sum_cycles": 0.0,
+  "reconstruction_error_cycles": 0.0
+}
+```
+
+The actual endpoint returns five top features and includes contributions from all 25 model input features in its reconstruction calculation. Small floating-point differences may occur.
 
 ## Run with Docker
 
-Build the image from the project root:
+### 1. Build the image
+
+From the project root:
 
 ```powershell
 docker build -t sentinelx-api .
 ```
 
-Start the container:
+### 2. Start the container
 
 ```powershell
 docker run --name sentinelx-container -p 8000:8000 sentinelx-api
 ```
 
-Then visit http://localhost:8000/docs.
+### 3. Open the API documentation
+
+Visit **http://localhost:8000/docs** to explore the endpoints interactively.
+
+To stop the container, press `Ctrl + C` in the terminal running it. If you started it in detached mode, stop it with:
+
+```powershell
+docker stop sentinelx-container
+```
 
 ## Run Tests
 
+Activate the virtual environment and run:
+
 ```powershell
-python -m pytest .\tests\test_api.py -v
+python -m pytest -q
 ```
+
+The test suite covers the health and home endpoints, prediction behavior, invalid input handling, sensor-range validation, and SHAP explanation behavior.
 
 ## Limitations
 
-- The current trained model targets the FD001 subset of C-MAPSS.
-- RUL estimates are model predictions, not maintenance or airworthiness decisions.
-- Sensor-range checks reflect observed training data, not certified operating limits.
-- Performance on other operating conditions, fault modes, or real-world engines requires separate validation.
+- The current model targets the FD001 subset of the NASA C-MAPSS dataset.
+- RUL predictions are estimates and should not be used as standalone maintenance or airworthiness decisions.
+- Sensor validation checks observed training-data ranges rather than certified operating limits.
+- SHAP values explain model behavior; they do not establish causal relationships.
+- Performance on other engine configurations, fault modes, and real-world engines requires separate evaluation.
+- The API expects all three operating settings and all 21 sensor values for each request.
 
 ## Author
 
 **R. Gayatri**
 
-GitHub: https://github.com/Gayatri-2630
+- GitHub: https://github.com/Gayatri-2630
+- Project repository: https://github.com/Gayatri-2630/SentinelX
