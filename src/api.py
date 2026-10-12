@@ -6,6 +6,7 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from src.validate_readings import inspect_reading
+from src.explainability import explain_prediction
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -101,3 +102,32 @@ def validate(reading: EngineReading):
         "dataset_reference": "FD001 training ranges",
         **result,
     }
+
+@app.post("/explain")
+def explain(reading: EngineReading):
+    try:
+        result = explain_prediction(
+            model,
+            features,
+            reading.model_dump(),
+        )
+
+        return {
+            "service": "SentinelX",
+            "explanation_type": "SHAP feature attribution",
+            "interpretation": (
+                "Positive contributions increase predicted RUL; "
+                "negative contributions decrease predicted RUL. "
+                "These are model attributions, not causal explanations."
+            ),
+            "predicted_rul_cycles": round(
+                max(0.0, result["raw_model_prediction_cycles"]), 2
+            ),
+            **result,
+        }
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="Explanation failed. Check the server logs.",
+        ) from exc

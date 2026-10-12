@@ -85,3 +85,29 @@ def test_validate_accepts_observed_readings():
     result = response.json()
     assert result["within_observed_ranges"] is True
     assert result["warning_count"] == 0
+
+def test_shap_explanation_reconstructs_prediction():
+    import joblib
+    from src.explainability import explain_prediction
+
+    bundle = joblib.load("models/sentinelx_lightgbm.joblib")
+    features = bundle["features"]
+
+    reading = {
+        feature: (
+            100 if feature == "cycle"
+            else 100.0 if feature == "setting_3"
+            else 0.0
+        )
+        for feature in features
+    }
+
+    result = explain_prediction(
+        bundle["model"],
+        features,
+        reading,
+    )
+
+    assert len(result["top_features"]) == 5
+    assert result["reconstruction_error_cycles"] < 1e-6
+    assert result["raw_model_prediction_cycles"] > 0
