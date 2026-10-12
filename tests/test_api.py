@@ -111,3 +111,25 @@ def test_shap_explanation_reconstructs_prediction():
     assert len(result["top_features"]) == 5
     assert result["reconstruction_error_cycles"] < 1e-6
     assert result["raw_model_prediction_cycles"] > 0
+
+def test_explain_endpoint_returns_shap_attributions():
+    reading = {
+        "cycle": 100,
+        "setting_1": 0.0,
+        "setting_2": 0.0,
+        "setting_3": 100.0,
+    }
+
+    for sensor_number in range(1, 22):
+        reading[f"sensor_{sensor_number}"] = 0.0
+
+    response = client.post("/explain", json=reading)
+
+    assert response.status_code == 200
+
+    result = response.json()
+
+    assert result["explanation_type"] == "SHAP feature attribution"
+    assert result["predicted_rul_cycles"] >= 0
+    assert len(result["top_features"]) == 5
+    assert result["reconstruction_error_cycles"] < 1e-6
