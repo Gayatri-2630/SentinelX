@@ -15,6 +15,13 @@ Evaluated on the official FD001 test set:
 
 The model was trained using the FD001 training data and evaluated against the provided official test-set RUL labels. These results apply to FD001 and should not be interpreted as a guarantee of performance on other engine configurations.
 
+### Actual vs. Predicted Remaining Useful Life
+
+![Actual vs. predicted RUL](models/fd001_actual_vs_predicted.png)
+
+The plot compares the model's predicted remaining useful life against the
+official FD001 test-set labels.
+
 ## Tech Stack
 
 - **Language:** Python
