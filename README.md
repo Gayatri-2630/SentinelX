@@ -235,23 +235,34 @@ The actual endpoint returns five top features and includes contributions from al
 From the project root:
 
 ```powershell
-docker build -t sentinelx-api .
+docker build -t sentinelx:local .
 ```
 
 ### 2. Start the container
 
+Run the container in detached mode:
+
 ```powershell
-docker run --name sentinelx-container -p 8000:8000 sentinelx-api
+docker run -d --name sentinelx-test -p 10000:10000 sentinelx:local
 ```
 
-### 3. Open the API documentation
-
-Visit **http://localhost:8000/docs** to explore the endpoints interactively.
-
-To stop the container, press `Ctrl + C` in the terminal running it. If you started it in detached mode, stop it with:
+### 3. Check the service health
 
 ```powershell
-docker stop sentinelx-container
+Invoke-RestMethod http://localhost:10000/health
+```
+
+The service should report a healthy status and confirm that the model is loaded.
+
+### 4. Open the API documentation
+
+Visit **http://localhost:10000/docs** to explore the API endpoints interactively.
+
+### 5. Stop and remove the container
+
+```powershell
+docker stop sentinelx-test
+docker rm sentinelx-test
 ```
 
 ## Run Tests
