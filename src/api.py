@@ -11,10 +11,16 @@ from src.explainability import explain_prediction
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = ROOT / "models" / "sentinelx_lightgbm.joblib"
+ANOMALY_MODEL_PATH = ROOT / "models" / "sentinelx_anomaly_detector.joblib"
 
 bundle = joblib.load(MODEL_PATH)
 model = bundle["model"]
 features = bundle["features"]
+
+anomaly_bundle = joblib.load(ANOMALY_MODEL_PATH)
+anomaly_pipeline = anomaly_bundle["pipeline"]
+anomaly_features = anomaly_bundle["features"]
+anomaly_threshold = float(anomaly_bundle["threshold"])
 
 app = FastAPI(
     title="SentinelX API",
@@ -130,4 +136,51 @@ def explain(reading: EngineReading):
         raise HTTPException(
             status_code=500,
             detail="Explanation failed. Check the server logs.",
+        ) from exc
+
+@app.post("/anomaly")
+def detect_anomaly(reading: EngineReading):
+    try:
+        input_data = pd.DataFrame(
+            [reading.model_dump()]
+        )
+
+        input_data = input_data[anomaly_features]
+
+        score = float(
+            anomaly_pipeline.decision_function(input_data)[0]
+        )
+
+        flagged = score <= anomaly_threshold
+
+        return {
+            "service": "SentinelX",
+            "detection_type": "Isolation Forest anomaly detection",
+            "anomaly_score": round(score, 8),
+            "threshold": round(anomaly_threshold, 8),
+            "is_anomaly": bool(flagged),
+            "status": (
+                "unusual_reading"
+                if flagged
+                else "normal_looking_reading"
+            ),
+            "interpretation": (
+                "This reading is unusual relative to the "
+                "detector's learned reference distribution."
+                if flagged
+                else
+                "This reading was not flagged by the "
+                "detector's current threshold."
+            ),
+            "warning": (
+                "An anomaly flag is not a confirmed engine fault. "
+                "The detector has not been validated against "
+                "ground-truth anomaly labels."
+            ),
+        }
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="Anomaly detection failed. Check the server logs.",
         ) from exc

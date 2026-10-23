@@ -133,3 +133,39 @@ def test_explain_endpoint_returns_shap_attributions():
     assert result["predicted_rul_cycles"] >= 0
     assert len(result["top_features"]) == 5
     assert result["reconstruction_error_cycles"] < 1e-6
+
+
+def test_anomaly_endpoint_returns_expected_fields():
+    payload = {
+        "cycle": 1,
+        **{f"setting_{i}": 0.0 for i in range(1, 4)},
+        **{f"sensor_{i}": 0.0 for i in range(1, 22)},
+    }
+
+    response = client.post("/anomaly", json=payload)
+
+    assert response.status_code == 200
+
+    result = response.json()
+
+    assert result["service"] == "SentinelX"
+    assert isinstance(result["anomaly_score"], float)
+    assert isinstance(result["threshold"], float)
+    assert isinstance(result["is_anomaly"], bool)
+    assert result["status"] in {
+        "unusual_reading",
+        "normal_looking_reading",
+    }
+    assert "ground-truth anomaly labels" in result["warning"]
+
+
+def test_anomaly_endpoint_rejects_invalid_cycle():
+    payload = {
+        "cycle": 0,
+        **{f"setting_{i}": 0.0 for i in range(1, 4)},
+        **{f"sensor_{i}": 0.0 for i in range(1, 22)},
+    }
+
+    response = client.post("/anomaly", json=payload)
+
+    assert response.status_code == 422
